@@ -5,10 +5,11 @@ namespace App\Support;
 /** Tiny HTML helpers for the form pages. */
 class Ui
 {
-    public static function f(string $name, string $label, string $cls = 'f'): string
+    public static function f(string $name, string $label, string $cls = 'f', string $placeholder = ''): string
     {
         return '<div class="' . $cls . '"><label for="' . e($name) . '">' . e($label)
-            . '</label><input type="text" id="' . e($name) . '" name="' . e($name) . '"></div>';
+            . '</label><input type="text" id="' . e($name) . '" name="' . e($name) . '"'
+            . ($placeholder !== '' ? ' placeholder="' . e($placeholder) . '"' : '') . '></div>';
     }
 
     public static function ta(string $name, string $label, int $rows = 3, string $cls = 'f'): string

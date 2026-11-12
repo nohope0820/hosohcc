@@ -4,7 +4,8 @@ namespace App\Services\DocxForm;
 
 /**
  * Mẫu số 18 - Đơn đăng ký biến động đất đai, tài sản gắn liền với đất.
- * The template (T7.2026, 10-page version) has a fixed "Kính gửi: Chi nhánh Văn phòng Đăng ký Đất đai Hai Bà Trưng",
+ * The template (T7.2026, 10-page version) prints "Kính gửi: Chi nhánh Văn phòng Đăng ký Đất đai Hai Bà Trưng" as plain text
+ * (no dots); the form lets the user replace it (empty = keep the template text),
  * 8 lines for the change description, 3 attachment lines and no Bảng 18a / guidance pages.
  */
 class Mau18Form
@@ -34,6 +35,12 @@ class Mau18Form
     public static function fill(DocxTemplate $t, array $d): void
     {
         $t->keepRange(self::START, self::END);
+
+        // "Kính gửi": optional override of the template's own text. Empty keeps what the template prints.
+        $kg = trim((string) ($d['kinhgui'] ?? ''));
+        if ($kg !== '') {
+            $t->setParagraphText($t->find('Kính gửi:'), 'Kính gửi: ' . preg_replace('/\s+/u', ' ', $kg));
+        }
 
         // slots and lines are all located before anything is changed (see SlotFiller)
         for ($n = 1; $n <= 3; $n++) { // "(1)<tab leader>……": the leader would shove the text to the right margin
