@@ -30,14 +30,14 @@ class BundleController extends Controller
         // keep the official order (Mẫu 18, LPTB, TNCN, SDDPNN) whatever order the browser sent
         $slugs = array_values(array_filter(array_keys($registry), fn ($s) => in_array($s, $request->input('forms'), true)));
 
-        $dir = storage_path('app/tmp');
+        $dir = DocxTemplate::tmpDir();
         $run = Str::random(8);
         $docx = [];
         $names = [];
         foreach ($slugs as $i => $slug) {
             [$class, , $name] = $registry[$slug];
             parse_str((string) ($request->input("data.$slug") ?? ''), $raw); // same "a[0][b]=c" format a form posts
-            $t = new DocxTemplate(storage_path('app/templates/bo-ho-so.docx'));
+            $t = DocxTemplate::official();
             $class::fill($t, FormController::sanitize($raw));
             $file = sprintf('%s/b%s-%d-%s.docx', $dir, $run, $i + 1, $slug);
             $t->save($file);

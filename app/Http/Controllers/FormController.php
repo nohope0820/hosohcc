@@ -40,10 +40,10 @@ class FormController extends Controller
         $request->validate(['format' => 'required|in:docx,pdf,print']);
         $data = self::sanitize($request->except(['_token']));
 
-        $dir = storage_path('app/tmp');
+        $dir = DocxTemplate::tmpDir();
         $docx = $dir . '/' . $form . '-' . Str::random(10) . '.docx';
 
-        $t = new DocxTemplate(storage_path('app/templates/bo-ho-so.docx'));
+        $t = DocxTemplate::official();
         $class::fill($t, $data);
         $t->save($docx);
 

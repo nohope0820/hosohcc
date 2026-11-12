@@ -31,6 +31,22 @@ class DocxTemplate
     /** @var DOMElement[] top-level body children kept for the current form */
     private array $scope = [];
 
+    /** The official bundle, versioned in the repo (storage/app is git-ignored, so it would never reach the server). */
+    public static function official(): self
+    {
+        return new self(resource_path('templates/bo-ho-so.docx'));
+    }
+
+    /** Scratch folder for generated files; created on first use (git does not keep empty folders). */
+    public static function tmpDir(): string
+    {
+        $dir = storage_path('app/tmp');
+        if (!is_dir($dir) && !@mkdir($dir, 0775, true) && !is_dir($dir)) {
+            throw new RuntimeException("Cannot create temp folder: $dir");
+        }
+        return $dir;
+    }
+
     public function __construct(string $path)
     {
         if (!is_file($path)) {
