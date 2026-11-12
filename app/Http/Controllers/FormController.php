@@ -51,12 +51,24 @@ class FormController extends Controller
             return response()->download($docx, $name . '.docx')->deleteFileAfterSend();
         }
 
-        $pdf = PdfConverter::convert($docx, $dir);
-        @unlink($docx);
+        try {
+            $pdf = PdfConverter::convert($docx, $dir);
+        } catch (\Throwable $e) {
+            return self::pdfFailure($e);
+        } finally {
+            @unlink($docx);
+        }
         return response()->file($pdf, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => ($data['format'] === 'pdf' ? 'attachment' : 'inline') . '; filename="' . $name . '.pdf"',
         ])->deleteFileAfterSend();
+    }
+
+    /** Short, readable reason for the browser (and the full exception in storage/logs). */
+    public static function pdfFailure(\Throwable $e)
+    {
+        \Illuminate\Support\Facades\Log::error('PDF export failed: ' . $e);
+        return response('Không tạo được PDF: ' . mb_substr($e->getMessage(), 0, 300), 503, ['Content-Type' => 'text/plain; charset=utf-8']);
     }
 
     /** Strings only, trimmed and capped (2000 chars: long free-text fields exist); nested arrays (table rows) up to 2 levels, max 20 rows. */

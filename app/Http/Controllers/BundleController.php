@@ -69,6 +69,8 @@ class BundleController extends Controller
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => ($request->input('format') === 'pdf' ? 'attachment' : 'inline') . '; filename="bo-ho-so-nha-dat.pdf"',
             ])->deleteFileAfterSend();
+        } catch (\Throwable $e) {
+            return FormController::pdfFailure($e);
         } finally {
             foreach ($cleanup as $f) {
                 @unlink($f);

@@ -191,7 +191,7 @@
     try{
       const fd=new FormData(frm); fd.set('format','print');
       const res=await fetch(frm.action,{method:'POST',body:fd,signal:ctl.signal,headers:{'Accept':'application/pdf'}});
-      if(!res.ok||!(res.headers.get('content-type')||'').includes('pdf')) throw new Error('HTTP '+res.status);
+      if(!res.ok||!(res.headers.get('content-type')||'').includes('pdf')){ const why=res.status===503?(await res.text()):''; throw new Error(why||('HTTP '+res.status)); }
       const blob=await res.blob(); if(my!==seq) return;
       await showPdf(blob); if(my!==seq) return;
       pvStatus.textContent='Đã cập nhật '+new Date().toLocaleTimeString('vi-VN');

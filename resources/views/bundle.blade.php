@@ -70,7 +70,7 @@
     try{
       const data={}; chosen.forEach(s=>data[s]=new URLSearchParams(params(s).p).toString());
       const res=await fetch('/bundle',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/pdf,application/zip','X-CSRF-TOKEN':token},body:JSON.stringify({format,forms:chosen,data})});
-      if(!res.ok) throw new Error('HTTP '+res.status);
+      if(!res.ok){ const why=res.status===503?(await res.text()):''; throw new Error(why||('HTTP '+res.status)); }
       const blob=await res.blob(); if(url) URL.revokeObjectURL(url); url=URL.createObjectURL(blob);
       if(format==='print'){ pvf.style.display='block'; pvf.src=url; msg.textContent='Đã tạo bản xem trước ('+chosen.length+' mẫu). Dùng nút in của khung PDF để in.'; pvf.scrollIntoView({behavior:'smooth'}); }
       else { const a=document.createElement('a'); a.href=url; a.download=filename; document.body.append(a); a.click(); a.remove(); msg.textContent='Đã tải '+filename+' ('+chosen.length+' mẫu).'; }
