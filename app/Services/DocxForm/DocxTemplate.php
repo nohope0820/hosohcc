@@ -56,7 +56,7 @@ class DocxTemplate
      * Keep only the body children from the paragraph starting with $startPrefix up to
      * (not including) the paragraph starting with $endPrefix. Page setup (final sectPr) is kept.
      */
-    public function keepRange(string $startPrefix, ?string $endPrefix, bool $ownSection = false): void
+    public function keepRange(string $startPrefix, ?string $endPrefix): void
     {
         $children = [];
         foreach ($this->body->childNodes as $c) {
@@ -88,9 +88,6 @@ class DocxTemplate
                 $this->body->removeChild($c);
             }
         }
-        if ($ownSection) {
-            $this->adoptOwnSection();
-        }
         // Trim trailing empty paragraphs (page breaks etc.) so no blank page follows the form.
         while ($this->scope) {
             $last = end($this->scope);
@@ -104,33 +101,6 @@ class DocxTemplate
             array_pop($this->scope);
         }
         $this->dropOrphanBookmarks(); // after trimming: the trim can strand a bookmark end too
-    }
-
-    /**
-     * The first form of the bundle carries its page setup in a section-break paragraph, while the other forms
-     * use the final body section. Move that setup into the body and drop the break paragraph (no blank last page).
-     */
-    private function adoptOwnSection(): void
-    {
-        foreach ($this->scope as $i => $c) {
-            $sect = $this->xp->query('./w:pPr/w:sectPr', $c)->item(0);
-            if (!$sect) {
-                continue;
-            }
-            $final = $this->xp->query('./w:sectPr', $this->body)->item(0);
-            $sect->parentNode->removeChild($sect);
-            if ($final) {
-                $this->body->replaceChild($sect, $final);
-            } else {
-                $this->body->appendChild($sect);
-            }
-            if (trim($this->text($c)) === '') {
-                $this->body->removeChild($c);
-                unset($this->scope[$i]);
-                $this->scope = array_values($this->scope);
-            }
-            return;
-        }
     }
 
     /** Cutting a form out of the bundle can strand one half of a bookmark; remove unmatched starts/ends. */

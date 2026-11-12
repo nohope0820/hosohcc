@@ -23,7 +23,7 @@
 </fieldset>
 
 <fieldset><legend>II. Người nhận chuyển nhượng, nhận thừa kế, quà tặng [11]</legend>
-  {!! U::rows('nguoinhan',['ten:Họ và tên','id:MST / Số định danh','ngaysinh:Ngày sinh','hc_so:Hộ chiếu số','hc_ngay:Ngày cấp','hc_noi:Nơi cấp','tyle:Tỷ lệ sở hữu %'],6,'+ Thêm người') !!}
+  {!! U::rows('nguoinhan',['ten:Họ và tên','id:MST / Số định danh','ngaysinh:Ngày sinh','hc_so:Hộ chiếu số','hc_ngay:Ngày cấp','hc_noi:Nơi cấp','tyle:Tỷ lệ sở hữu %'],5,'+ Thêm người') !!}
 </fieldset>
 
 <fieldset><legend>III. Loại bất động sản</legend>

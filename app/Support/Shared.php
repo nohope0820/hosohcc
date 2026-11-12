@@ -70,7 +70,7 @@ class Shared
                 'dienthoai' => 'nhan.0.dienthoai', 'email' => 'nhan.0.email', 'diachi' => 'nhan.0.diachi',
                 'ky_noi' => 'ky.noi',
             ],
-            'rows' => ['nguoisd' => ['prefix' => 'nhan', 'offset' => 0, 'cols' => ['ten' => 'ten', 'diachi' => 'diachi', 'mst' => 'mst', 'id' => 'id']]],
+            'rows' => [],
         ],
     ];
 }
