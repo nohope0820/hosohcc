@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>@yield('title', 'Tờ khai nhà đất')</title>
 <style>
 @include('partials.style')
@@ -15,7 +16,7 @@
   @include('partials.nav')
   <h1>@yield('title')</h1>
   <p class="sub">@yield('sub')</p>
-  <p class="hint"><i></i>Ô có vạch xanh bên trái là <b>dữ liệu dùng chung</b>: nhập ở một mẫu sẽ tự có ở các mẫu khác (tên, địa chỉ, CCCD, mã số thuế, điện thoại, đại lý thuế, nơi ký...). Ngày tháng và số liệu (diện tích, giá trị, số hợp đồng, số thửa...) nhập riêng từng mẫu.</p>
+  <p class="hint"><i></i>Ô viền nét đứt là <b>gợi ý lấy từ mẫu trước</b> (địa chỉ, ngày ký...): đúng thì giữ, sai thì sửa hoặc xóa. Ô có vạch xanh bên trái là <b>dữ liệu dùng chung</b>: nhập ở một mẫu sẽ tự có ở các mẫu khác (tên, địa chỉ, CCCD, mã số thuế, điện thoại, đại lý thuế, nơi ký...). Ngày tháng và số liệu (diện tích, giá trị, số hợp đồng, số thửa...) nhập riêng từng mẫu.</p>
   @if($errors->any())<div class="errs">{{ $errors->first() }}</div>@endif
 
   <form method="post" action="{{ route('form.generate', $slug) }}" id="frm" data-draft="draft-{{ $slug }}">
@@ -43,6 +44,7 @@
 </aside>
 </div>
 </div>
+@include('partials.export')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" onerror="window.pdfjsLib=undefined"></script>
 <script>
 (function(){
@@ -116,7 +118,7 @@
   // shared fields live in the shared store, not in this form's own draft
   function save(){schedule();try{
     const o={}; frm.querySelectorAll('input[name],textarea[name],select[name]').forEach(i=>{
-      if(i.name==='_token'||i.name==='format'||i.dataset.skey) return;
+      if(i.name==='_token'||i.name==='format'||i.dataset.skey||i.dataset.auto==='1') return; // suggestions are not saved as the user's own value
       o[i.name]= i.type==='checkbox' ? i.checked : i.value; });
     localStorage.setItem(KEY,JSON.stringify(o));}catch(e){}}
   function load(){
@@ -140,7 +142,25 @@
       const want=Math.max(1,neededRows(n)); while(reps[n].box.children.length<Math.min(want,reps[n].max)) addRow(n);
     });
     saveS();
+    applyInherit();
     if(!o){const ld=frm.elements['lan_dau']; if(ld) ld.checked=true;}
+  }
+  // ---- suggestions from earlier forms (dashed border; edit or clear freely) ----------
+  const INH=SH.inherit||{}, OFF=SH.offer||{};
+  function applyInherit(){
+    Object.entries(INH).forEach(([name,src])=>{
+      const el=frm.elements[name]; if(!el) return;
+      if(el.dataset.auto!=='1'&&(el.dataset.touched==='1'||el.value!=='')) return; // the user's own value wins
+      const v=S[src];
+      if(v!=null&&v!==''){ el.value=v; el.dataset.auto='1'; el.classList.add('auto'); }
+      else if(el.dataset.auto==='1'){ el.value=''; delete el.dataset.auto; el.classList.remove('auto'); }
+    });
+  }
+  function onSuggest(e){
+    const el=e.target, name=el&&el.name; if(!name) return;
+    if(name in INH){ el.dataset.touched='1'; delete el.dataset.auto; el.classList.remove('auto'); }
+    if(name in OFF){ const k=OFF[name]; if(el.value==='') delete S[k]; else S[k]=el.value; saveS(); }
+    applyInherit();
   }
   // typing in a shared field updates the store and every other field that carries the same key
   function onShared(e){
@@ -149,6 +169,7 @@
     frm.querySelectorAll('[data-skey="'+key+'"]').forEach(o=>{ if(o!==el) o.value=el.value; });
   }
   frm.addEventListener('input',onShared);
+  frm.addEventListener('input',onSuggest);
   frm.addEventListener('input',save); frm.addEventListener('change',save);
   document.getElementById('clear').onclick=()=>{if(confirm('Xóa dữ liệu riêng của mẫu này? (dữ liệu dùng chung với các mẫu khác được giữ lại)')){try{localStorage.removeItem(KEY)}catch(e){} location.reload();}};
   document.getElementById('clearShared').onclick=()=>{if(confirm('Xóa dữ liệu dùng chung (tên, địa chỉ, CCCD, MST, điện thoại, đại lý thuế...) ở TẤT CẢ các mẫu?')){try{localStorage.removeItem(SKEY)}catch(e){} location.reload();}};

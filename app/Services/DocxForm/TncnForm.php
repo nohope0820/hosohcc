@@ -98,6 +98,9 @@ class TncnForm
         }
 
         // Tables: 0 = transferors, 1 = recipients, 2 = land price rows, 3 = exemptions
+        // wider columns for the numbers (ID, birth date, passport...), narrower for the name
+        $t->setGridWidths(0, [842, 1300, 1500, 1200, 1230, 1200, 1159, 1350, 900]);
+        $t->setGridWidths(1, [892, 1500, 1550, 1300, 1250, 1250, 1200, 1658]);
         SlotFiller::table($t, 0, 3, [null, 'ten', 'id', 'ngaysinh', 'hc_so', 'hc_ngay', 'hc_noi', 'dienthoai', 'tyle'], $d['nguoichuyen'] ?? [], 6);
         SlotFiller::table($t, 1, 3, [null, 'ten', 'id', 'ngaysinh', 'hc_so', 'hc_ngay', 'hc_noi', 'tyle'], $d['nguoinhan'] ?? [], 6);
         SlotFiller::table($t, 2, 2, [null, 'duong', 'doan', 'vitri', 'loai', 'heso', 'dientich'], $d['datvitri'] ?? [], 3);

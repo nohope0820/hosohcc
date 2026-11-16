@@ -3,7 +3,7 @@
 namespace App\Services\DocxForm;
 
 /**
- * Mẫu 01/TK-SDDPNN - Tờ khai thuế sử dụng đất phi nông nghiệp (hộ gia đình, cá nhân) + sơ đồ vị trí thửa đất.
+ * Mẫu 01/TK-SDDPNN - Tờ khai thuế sử dụng đất phi nông nghiệp (hộ gia đình, cá nhân).
  * Map format: see SlotFiller.
  */
 class SddpnnForm
@@ -38,7 +38,6 @@ class SddpnnForm
         'mien_lydo' => ['[25.1]', 1], 'mien_kyhan' => ['[25.2]', 0],
 
         'kt_ten' => ['Họ và tên:', 0, 0], 'kt_chungchi' => ['môn về thuế số:', 0],
-        'sodo_ten' => ['Họ và tên:', 0, 1], 'sodo_diachi' => ['Địa chỉ:', 0],
     ];
 
     /** key => paragraph prefix (drawn checkbox rectangles) */
@@ -50,7 +49,7 @@ class SddpnnForm
 
     public static function fill(DocxTemplate $t, array $d): void
     {
-        $t->keepRange(self::START, null);
+        $t->keepRange(self::START, 'SƠ ĐỒ VỊ TRÍ THỬA ĐẤT'); // the diagram sheet is the separate SodoForm
 
         $d['lan_dau_x'] = !empty($d['lan_dau']) ? 'X' : '';
         SlotFiller::apply($t, self::SLOTS, $d); // one-line blanks: typed text simply replaces the dots
@@ -60,9 +59,6 @@ class SddpnnForm
                 $t->tickShape($t->find($prefix));
             }
         }
-
-        // the location diagram is its own sheet: keep its title with the drawing area
-        $t->pageBreakBefore($t->find('SƠ ĐỒ VỊ TRÍ THỬA ĐẤT'));
 
         $sign = $t->find('..., ngày');
         foreach (array_reverse(['ky_ten_noi', 'ky_ten_ngay', 'ky_ten_thang', 'ky_ten_nam'], true) as $i => $k) {

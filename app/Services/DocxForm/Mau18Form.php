@@ -36,6 +36,16 @@ class Mau18Form
     {
         $t->keepRange(self::START, self::END);
 
+        // b) identity paper: four small inputs joined into one line ("CCCD số 001…, cấp ngày …, nơi cấp …")
+        $parts = array_filter([
+            trim((string) ($d['idloai'] ?? '')) . (trim((string) ($d['idso'] ?? '')) !== '' ? ' số ' . trim((string) $d['idso']) : ''),
+            trim((string) ($d['idngay'] ?? '')) !== '' ? 'cấp ngày ' . trim((string) $d['idngay']) : '',
+            trim((string) ($d['idnoi'] ?? '')) !== '' ? 'nơi cấp ' . trim((string) $d['idnoi']) : '',
+        ], fn ($x) => trim($x) !== '');
+        if ($parts) {
+            $d['giayto_nhanthan'] = trim(implode(', ', $parts));
+        }
+
         // "Kính gửi": optional override of the template's own text. Empty keeps what the template prints.
         $kg = trim((string) ($d['kinhgui'] ?? ''));
         if ($kg !== '') {
@@ -49,6 +59,10 @@ class Mau18Form
             }
         }
         SlotFiller::apply($t, self::SLOTS, $d); // one-line blanks: typed text simply replaces the dots
+        // d) phone + e-mail share one line: a long e-mail must not push the rest to a second line
+        if (trim((string) ($d['dienthoai'] ?? '')) !== '' || trim((string) ($d['email'] ?? '')) !== '') {
+            $t->fitParagraph($t->find('d) Điện thoại'));
+        }
         foreach (self::LINES as $key => $targets) {
             // Multi-line blanks (Tên, Giấy tờ, Địa chỉ, Nội dung): the text is spread over the dotted lines and the last
             // used line is topped up with dots to the printed width.

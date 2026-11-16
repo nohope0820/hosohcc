@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @php use App\Support\Ui as U; @endphp
 @section('title', 'Tờ khai thuế sử dụng đất phi nông nghiệp')
-@section('sub', 'Mẫu số 01/TK-SDDPNN (Thông tư 89/2026/TT-BTC), hộ gia đình, cá nhân. Gồm cả trang sơ đồ vị trí thửa đất. Ô để trống giữ nguyên dòng chấm để viết tay.')
+@section('sub', 'Mẫu số 01/TK-SDDPNN (Thông tư 89/2026/TT-BTC), hộ gia đình, cá nhân. Sơ đồ vị trí thửa đất nằm ở tab riêng. Ô để trống giữ nguyên dòng chấm để viết tay.')
 @section('fields')
 <fieldset><legend>Kỳ tính thuế</legend>
   <div class="grid">{!! U::f('ky_nam','[01] Năm','s4').U::f('bosung_lan','[03] Bổ sung lần thứ','s4') !!}</div>
@@ -77,12 +77,10 @@
   </div>
 </fieldset>
 
-<fieldset><legend>Chữ ký &amp; sơ đồ vị trí thửa đất</legend>
+<fieldset><legend>Chữ ký</legend>
   <div class="grid">
     {!! U::f('kt_ten','Người thực hiện dịch vụ thuế: họ và tên','s6').U::f('kt_chungchi','Chứng chỉ nghiệp vụ số','s6')
-       .U::f('ky_ten_noi','Nơi ký','s3').U::f('ky_ten_ngay','ngày','s3').U::f('ky_ten_thang','tháng','s3').U::f('ky_ten_nam','năm','s3')
-       .U::f('sodo_ten','Sơ đồ: họ và tên','s6').U::f('sodo_diachi','Sơ đồ: địa chỉ','s6') !!}
+       .U::f('ky_ten_noi','Nơi ký','s3').U::f('ky_ten_ngay','ngày','s3').U::f('ky_ten_thang','tháng','s3').U::f('ky_ten_nam','năm','s3') !!}
   </div>
-  <p class="note">Vùng vẽ sơ đồ để trống trên bản in, bạn vẽ tay.</p>
 </fieldset>
 @endsection

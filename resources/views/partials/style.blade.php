@@ -42,6 +42,7 @@
   .chk{display:flex;gap:8px;align-items:center;margin:4px 0} .chk label{margin:0;color:var(--ink);font-size:15px}
   .bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 16px}
   .bar .in{max-width:1560px;margin:0 auto;display:flex;gap:10px;flex-wrap:wrap}
+  input.auto,textarea.auto,select.auto{border-style:dashed;border-color:var(--acc);background:color-mix(in srgb,var(--acc) 7%,var(--card))}
   button{padding:10px 16px;border-radius:8px;border:1px solid var(--acc);background:var(--acc);color:#fff;font:inherit;cursor:pointer}
   button.sec{background:transparent;color:var(--acc)} button:hover{filter:brightness(1.08)}
   .row{display:grid;gap:8px;margin-bottom:8px;align-items:center}

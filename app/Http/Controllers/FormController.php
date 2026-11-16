@@ -7,6 +7,7 @@ use App\Services\DocxForm\LptbForm;
 use App\Services\DocxForm\Mau18Form;
 use App\Services\DocxForm\PdfConverter;
 use App\Services\DocxForm\SddpnnForm;
+use App\Services\DocxForm\SodoForm;
 use App\Services\DocxForm\TncnForm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -19,6 +20,7 @@ class FormController extends Controller
         'lptb' => [LptbForm::class, 'Tờ khai lệ phí trước bạ nhà, đất', 'to-khai-le-phi-truoc-ba'],
         'tncn' => [TncnForm::class, 'Tờ khai thuế TNCN (chuyển nhượng, thừa kế, quà tặng bất động sản)', 'to-khai-thue-tncn-bds'],
         'sddpnn' => [SddpnnForm::class, 'Tờ khai thuế sử dụng đất phi nông nghiệp', 'to-khai-thue-sddpnn'],
+        'sodo' => [SodoForm::class, 'Sơ đồ vị trí thửa đất', 'so-do-vi-tri-thua-dat'],
     ];
 
     public static function forms(): array

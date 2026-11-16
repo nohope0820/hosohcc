@@ -94,9 +94,11 @@ class LptbForm
         // ...and its header cells carry a negative left indent (-432) that pushes the text into the neighbouring column,
         // so "Mã số thuế" was covered by the previous header. Also drop the 6 leading spaces of "Tên tổ chức...".
         $t->setParagraphText($t->find('Tên tổ chức/cá nhân đồng sở hữu'), 'Tên tổ chức/cá nhân đồng sở hữu');
-        $t->resetRowIndent(0, 0);
+        for ($r = 0, $n = $t->tableRowCount(0); $r < $n; $r++) { // data rows also carry a negative indent that pushes values out of their cells
+            $t->resetRowIndent(0, $r);
+        }
         // the STT column is only ~3% wide (its text used to hang out of the cell thanks to that indent)
-        $t->setColumnWidths(0, [400, 1300, 600, 1800, 900]);
+        $t->setColumnWidths(0, [400, 1300, 800, 1700, 800]);
 
         SlotFiller::apply($t, self::SLOTS, $d); // one-line blanks: typed text simply replaces the dots
 

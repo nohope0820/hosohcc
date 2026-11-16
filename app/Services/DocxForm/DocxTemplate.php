@@ -418,6 +418,36 @@ class DocxTemplate
         }
     }
 
+    /**
+     * Set the width (twips) of every grid column of a table; each cell gets the sum of the columns it spans
+     * (so merged header cells stay consistent). The table keeps its total width when the new widths add up to the old total.
+     */
+    public function setGridWidths(int $table, array $widths): void
+    {
+        $tbl = $this->xp->query('/w:document/w:body/w:tbl')->item($table);
+        if (!$tbl) {
+            return;
+        }
+        foreach ($this->xp->query('./w:tblGrid/w:gridCol', $tbl) as $i => $c) {
+            if (isset($widths[$i])) {
+                $c->setAttributeNS(self::W, 'w:w', (string) $widths[$i]);
+            }
+        }
+        foreach ($this->xp->query('./w:tr', $tbl) as $tr) {
+            $col = 0;
+            foreach ($this->xp->query('./w:tc', $tr) as $tc) {
+                $span = $this->xp->query('./w:tcPr/w:gridSpan', $tc)->item(0);
+                $n = $span ? max(1, (int) $span->getAttributeNS(self::W, 'val')) : 1;
+                $w = $this->xp->query('./w:tcPr/w:tcW', $tc)->item(0);
+                if ($w) {
+                    $w->setAttributeNS(self::W, 'w:w', (string) array_sum(array_slice($widths, $col, $n)));
+                    $w->setAttributeNS(self::W, 'w:type', 'dxa');
+                }
+                $col += $n;
+            }
+        }
+    }
+
     /** Zero the left/first-line indent of every paragraph in a table row (negative indents spill text into the neighbour cell). */
     public function resetRowIndent(int $table, int $row): void
     {
@@ -484,6 +514,126 @@ class DocxTemplate
         }
         $p = $this->xp->query('./w:p', $tc)->item(0);
         $this->appendText($p, $this->clean($value));
+        $this->fitCell($tc, $p, $this->clean($value));
+    }
+
+    /** @var array<int,array{0:DOMElement,1:int,2:int}> filled table values: [run, base size, size that fits its column] (half-points) */
+    private array $fitRuns = [];
+
+    /**
+     * Table values are plain (not bold) and stay on one line when they are numbers (ID, date, phone...). When a value is
+     * wider than its column the size is reduced, and finalizeFonts() then gives ALL filled table values the same size
+     * (the smallest one needed), so the table never mixes sizes. Words in a name may still wrap at the spaces.
+     */
+    private function fitCell(DOMElement $tc, DOMElement $p, string $text): void
+    {
+        $runs = $this->xp->query('./w:r[w:t]', $p);
+        $run = $runs->item($runs->length - 1);
+        if (!$run || $text === '') {
+            return;
+        }
+        foreach ($this->xp->query('./w:rPr/w:b|./w:rPr/w:bCs', $run) as $b) {
+            $b->parentNode->removeChild($b); // the template's empty cells carry a bold paragraph mark: filled values are regular
+        }
+        $szNode = $this->xp->query('./w:rPr/w:sz', $run)->item(0) ?? $this->xp->query('./w:pPr/w:rPr/w:sz', $p)->item(0);
+        $base = $szNode ? (int) $szNode->getAttributeNS(self::W, 'val') : 24; // half-points (Normal = 12pt)
+
+        $tcw = $this->xp->query('./w:tcPr/w:tcW', $tc)->item(0);
+        $width = $tcw ? (int) $tcw->getAttributeNS(self::W, 'w') : 0;
+        if ($tcw && $tcw->getAttributeNS(self::W, 'type') === 'pct') { // fiftieths of a percent of the table width
+            $grid = 0;
+            foreach ($this->xp->query('ancestor::w:tbl[1]/w:tblGrid/w:gridCol', $tc) as $g) {
+                $grid += (int) $g->getAttributeNS(self::W, 'w');
+            }
+            $width = (int) round($width / 5000 * $grid);
+        } elseif (!$tcw || $tcw->getAttributeNS(self::W, 'type') !== 'dxa') {
+            $width = 0;
+        }
+        $fit = $base;
+        if ($width > 0) {
+            $avail = ($width - 216) / 20 - 3; // pt: column minus default cell margins and a safety gap
+            $oneLine = !str_contains($text, ' ') || preg_match('/^[\d\s\/.,+\-%()]+$/u', $text);
+            $probe = $oneLine ? $text : array_reduce(explode(' ', $text), fn ($a, $w) => mb_strlen($w) > mb_strlen($a) ? $w : $a, '');
+            $em = FontMetrics::em($probe) * 1.05;
+            if ($avail > 0 && $em * $base / 2 > $avail) {
+                $fit = max(14, (int) floor($avail / $em * 2)); // never below 7pt
+            }
+        }
+        $this->fitRuns[] = [$run, $base, $fit];
+    }
+
+    /**
+     * Keep a one-line paragraph on one line after it was filled: when its text is wider than the line (page width minus margins
+     * and the paragraph's own indents) every run shrinks by the same amount, down to $minHalfPts (default 9pt).
+     */
+    public function fitParagraph(DOMElement $p, int $minHalfPts = 18): void
+    {
+        $pgW = $this->xp->query('/w:document/w:body/w:sectPr/w:pgSz')->item(0);
+        $pgM = $this->xp->query('/w:document/w:body/w:sectPr/w:pgMar')->item(0);
+        if (!$pgW || !$pgM) {
+            return;
+        }
+        $a = fn (?DOMElement $e, string $n) => $e ? (int) $e->getAttributeNS(self::W, $n) : 0;
+        $ind = $this->xp->query('./w:pPr/w:ind', $p)->item(0);
+        $line = $a($pgW, 'w') - $a($pgM, 'left') - $a($pgM, 'right')
+            - $a($ind, 'left') - $a($ind, 'right') - max(0, $a($ind, 'firstLine')) + max(0, $a($ind, 'hanging')) * 0;
+        $avail = $line / 20 * 0.98; // pt, 2% safety
+        $runs = $this->xp->query('./w:r[w:t]', $p);
+        if (!$runs->length || $avail <= 0) {
+            return;
+        }
+        $sz = $this->xp->query('./w:rPr/w:sz', $runs->item(0))->item(0);
+        $base = $sz ? (int) $sz->getAttributeNS(self::W, 'val') : 24;
+        $em = FontMetrics::em($this->text($p)) * 1.03;
+        if ($em * $base / 2 <= $avail) {
+            return;
+        }
+        $fit = max($minHalfPts, (int) floor($avail / $em * 2));
+        foreach ($runs as $run) {
+            $rpr = $this->xp->query('./w:rPr', $run)->item(0);
+            if (!$rpr) {
+                $rpr = $this->dom->createElementNS(self::W, 'w:rPr');
+                $run->insertBefore($rpr, $run->firstChild);
+            }
+            foreach ($this->xp->query('./w:sz|./w:szCs', $rpr) as $old) {
+                $rpr->removeChild($old);
+            }
+            $after = $this->xp->query('./w:lang|./w:eastAsianLayout|./w:specVanish|./w:vertAlign|./w:em', $rpr)->item(0);
+            foreach (['w:sz', 'w:szCs'] as $n) {
+                $e = $this->dom->createElementNS(self::W, $n);
+                $e->setAttributeNS(self::W, 'w:val', (string) $fit);
+                $rpr->insertBefore($e, $after);
+            }
+        }
+    }
+
+    /** Give every filled table value the smallest size that any of them needed (no-op when nothing had to shrink). */
+    public function finalizeFonts(): void
+    {
+        if (!$this->fitRuns) {
+            return;
+        }
+        $target = min(array_map(fn ($r) => $r[2], $this->fitRuns));
+        foreach ($this->fitRuns as [$run, $base]) {
+            if ($target >= $base) {
+                continue;
+            }
+            $rpr = $this->xp->query('./w:rPr', $run)->item(0);
+            if (!$rpr) {
+                $rpr = $this->dom->createElementNS(self::W, 'w:rPr');
+                $run->insertBefore($rpr, $run->firstChild);
+            }
+            foreach ($this->xp->query('./w:sz|./w:szCs', $rpr) as $old) {
+                $rpr->removeChild($old);
+            }
+            $after = $this->xp->query('./w:lang|./w:eastAsianLayout|./w:specVanish|./w:vertAlign|./w:em', $rpr)->item(0);
+            foreach (['w:sz', 'w:szCs'] as $n) {
+                $e = $this->dom->createElementNS(self::W, $n);
+                $e->setAttributeNS(self::W, 'w:val', (string) $target);
+                $rpr->insertBefore($e, $after);
+            }
+        }
+        $this->fitRuns = [];
     }
 
     public function tickCell(int $table, int $row, int $col): void
@@ -548,6 +698,7 @@ class DocxTemplate
         }
         $p = $this->xp->query('./w:p', $tc)->item(0);
         $this->appendText($p, $value);
+        $this->fitCell($tc, $p, $value);
     }
 
     /** Debug: cell texts of every row of table $table. */
@@ -574,10 +725,48 @@ class DocxTemplate
         return $this->xp->query('./w:tr', $tbl)->length;
     }
 
+    /**
+     * Append another filled form (same source package, so styles/numbering/media are shared) to the end of this one,
+     * starting on a new page. Used to export the whole file set as one .docx.
+     */
+    public function append(self $other): void
+    {
+        $other->finalizeFonts();
+        $final = null;
+        foreach ($this->body->childNodes as $c) {
+            if ($c instanceof DOMElement && $c->localName === 'sectPr') {
+                $final = $c; // page setup stays the last child
+            }
+        }
+        $first = true;
+        foreach (iterator_to_array($other->body->childNodes) as $c) {
+            if ($c instanceof DOMElement && $c->localName === 'sectPr') {
+                continue;
+            }
+            $n = $this->dom->importNode($c, true);
+            $this->body->insertBefore($n, $final);
+            if ($first && $n instanceof DOMElement) {
+                $first = false;
+                if ($n->localName === 'p') {
+                    $this->pageBreakBefore($n);
+                } else { // a table cannot carry the flag: put an explicit page break in front of it
+                    $p = $this->dom->createElementNS(self::W, 'w:p');
+                    $r = $this->dom->createElementNS(self::W, 'w:r');
+                    $br = $this->dom->createElementNS(self::W, 'w:br');
+                    $br->setAttributeNS(self::W, 'w:type', 'page');
+                    $r->appendChild($br);
+                    $p->appendChild($r);
+                    $this->body->insertBefore($p, $n);
+                }
+            }
+        }
+    }
+
     /* -------------------------------------------------------------- output */
 
     public function save(string $target): void
     {
+        $this->finalizeFonts();
         copy($this->path, $target);
         $zip = new ZipArchive();
         $zip->open($target);
