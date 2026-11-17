@@ -10,7 +10,7 @@
 <fieldset><legend>1. Người sử dụng đất, chủ sở hữu tài sản gắn liền với đất, người quản lý đất</legend>
   {!! U::ta('ten','a) Tên',2) !!}
   <p class="note">b) Giấy tờ nhân thân / pháp nhân (tự ghép thành một dòng trên bản in)</p>
-  <div class="grid">{!! U::sel('idloai','Loại giấy tờ',['CCCD'=>'CCCD','Hộ chiếu'=>'Hộ chiếu','CMND'=>'CMND'],'s3').U::f('idso','Số','s3').U::f('idngay','Ngày cấp','s3').U::f('idnoi','Nơi cấp','s3') !!}</div>
+  <div class="grid">{!! U::sel('idloai','Loại giấy tờ',['CCCD'=>'CCCD','Căn cước'=>'Căn cước','Hộ chiếu'=>'Hộ chiếu','CMND'=>'CMND'],'s3').U::f('idso','Số','s3').U::f('idngay','Ngày cấp','s3').U::f('idnoi','Nơi cấp','s3') !!}</div>
   {!! U::ta('diachi','c) Địa chỉ',2) !!}
   <div class="grid">{!! U::f('dienthoai','d) Điện thoại liên hệ','s6').U::f('email','Hộp thư điện tử','s6') !!}</div>
 </fieldset>
