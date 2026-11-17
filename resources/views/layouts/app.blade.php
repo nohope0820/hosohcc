@@ -143,7 +143,6 @@
     });
     saveS();
     applyInherit();
-    if(!o){const ld=frm.elements['lan_dau']; if(ld) ld.checked=true;}
   }
   // ---- suggestions from earlier forms (dashed border; edit or clear freely) ----------
   const INH=SH.inherit||{}, OFF=SH.offer||{};

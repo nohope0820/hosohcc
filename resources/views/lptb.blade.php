@@ -36,6 +36,7 @@
        .U::f('dat_mucdich','1.4 Mục đích sử dụng đất','s8').U::f('dat_dientich','1.5 Diện tích (m²)','s4') !!}
   </div>
   <p class="note">1.6 Nguồn gốc: người/tổ chức chuyển giao quyền sử dụng đất</p>
+  <div class="grid">{!! U::f('dat_nguongoc','1.6 Nguồn gốc nhà đất (giao, cho thuê, nhận chuyển nhượng, thừa kế, tặng cho...)') !!}</div>
   <div class="grid">
     {!! U::f('giao_ten','Tên tổ chức/cá nhân chuyển giao').U::f('giao_mst','Mã số thuế','s4').U::f('giao_cccd','Số định danh / Hộ chiếu','s8')
        .U::f('giao_diachi','Địa chỉ người giao')

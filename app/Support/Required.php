@@ -20,7 +20,7 @@ class Required
     private const MAP = [
         'mau18' => [
             'Tên người đăng ký' => 'ten', 'Giấy tờ nhân thân (loại, số)' => ['idloai', 'idso'], 'Địa chỉ' => 'diachi',
-            'Điện thoại liên hệ' => 'dienthoai', 'Nội dung biến động' => 'noidung', 'Ngày ký' => self::DATE,
+            'Điện thoại liên hệ' => 'dienthoai', 'Nội dung biến động' => 'noidung', 'Ngày nộp hồ sơ' => self::DATE,
         ],
         'lptb' => [
             'Người nộp thuế' => 'nnt_ten', 'Số định danh / Hộ chiếu' => 'nnt_cccd', 'Địa chỉ người nộp thuế' => 'nnt_diachi',

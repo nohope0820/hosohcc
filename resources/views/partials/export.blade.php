@@ -57,7 +57,6 @@
       });
     });
     Object.entries(cfg.inherit||{}).forEach(([name,src])=>{ if(!has(p,name)&&S[src]) p[name]=S[src]; }); // same suggestions the form page shows
-    if(!d && ['lptb','tncn','sddpnn'].includes(slug)) p.lan_dau='1'; // same default as the form page
     return p;
   }
   const has=(p,k)=>p[k]!=null&&String(p[k]).trim()!=='';

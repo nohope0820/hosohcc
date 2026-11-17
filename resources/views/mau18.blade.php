@@ -26,7 +26,7 @@
   </div>
 </fieldset>
 
-<fieldset><legend>Ngày ký</legend>
+<fieldset><legend>Ngày nộp hồ sơ</legend>
   <div class="grid">{!! U::f('ky_noi','Nơi','s3').U::f('ky_ngay','ngày','s3').U::f('ky_thang','tháng','s3').U::f('ky_nam','năm','s3') !!}</div>
 </fieldset>
 

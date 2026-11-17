@@ -100,7 +100,15 @@ class LptbForm
         // the STT column is only ~3% wide (its text used to hang out of the cell thanks to that indent)
         $t->setColumnWidths(0, [400, 1300, 800, 1700, 800]);
 
+        // 1.6 Nguồn gốc: an extra line under the heading (dots when empty, the typed text otherwise).
+        // Cloned from a pristine dotted line before SlotFiller changes it; inserted afterwards so prefix lookups stay unique.
+        $srcLine = trim((string) ($d['dat_nguongoc'] ?? ''));
+        $originLine = $t->cloneLine($t->find('- Tên tổ chức/cá nhân chuyển giao QSDĐ:'), $srcLine !== '' ? $srcLine : str_repeat('…', 44));
+        $originAnchor = $t->find('1.6.');
+
         SlotFiller::apply($t, self::SLOTS, $d); // one-line blanks: typed text simply replaces the dots
+
+        $t->insertAfter($originAnchor, $originLine);
 
         // [01] Kỳ tính thuế: ngày … tháng … năm …..  (single-char ellipses)
         $p01 = $t->find('[01]');

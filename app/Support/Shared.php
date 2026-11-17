@@ -74,10 +74,8 @@ class Shared
     private const OFFER = [
         'mau18' => ['ky_ngay' => 'sug.ky.ngay', 'ky_thang' => 'sug.ky.thang', 'ky_nam' => 'sug.ky.nam'],
         'lptb' => [
-            'ky_ngay' => 'sug.ky.ngay', 'ky_thang' => 'sug.ky.thang', 'ky_nam' => 'sug.ky.nam',
             'ky_ten_ngay' => 'sug.ky.ngay', 'ky_ten_thang' => 'sug.ky.thang', 'ky_ten_nam' => 'sug.ky.nam',
         ],
-        'tncn' => ['ky_ngay' => 'sug.ky.ngay', 'ky_thang' => 'sug.ky.thang', 'ky_nam' => 'sug.ky.nam'],
         'sddpnn' => [
             'ky_ten_ngay' => 'sug.ky.ngay', 'ky_ten_thang' => 'sug.ky.thang', 'ky_ten_nam' => 'sug.ky.nam',
             'nnt_sonha' => 'sug.nnt.sonha', 'nnt_duong' => 'sug.nnt.duong', 'nnt_to' => 'sug.nnt.to',
@@ -87,12 +85,10 @@ class Shared
 
     private const INHERIT = [
         'lptb' => [
-            'ky_ngay' => 'sug.ky.ngay', 'ky_thang' => 'sug.ky.thang', 'ky_nam' => 'sug.ky.nam',
             'ky_ten_ngay' => 'sug.ky.ngay', 'ky_ten_thang' => 'sug.ky.thang', 'ky_ten_nam' => 'sug.ky.nam',
             'dat_sonha' => 'sug.nnt.sonha', 'dat_duong' => 'sug.nnt.duong', 'dat_xa' => 'nhan.0.xa', 'dat_tinh' => 'nhan.0.tinh',
         ],
         'tncn' => [
-            'ky_ngay' => 'sug.ky.ngay', 'ky_thang' => 'sug.ky.thang', 'ky_nam' => 'sug.ky.nam',
             'dat_diachi' => 'nhan.0.diachi', 'dat_xa' => 'nhan.0.xa', 'dat_tinh' => 'nhan.0.tinh',
         ],
         'sddpnn' => [

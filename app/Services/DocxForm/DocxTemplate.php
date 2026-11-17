@@ -462,6 +462,19 @@ class DocxTemplate
         }
     }
 
+    /** Detached copy of a paragraph (formatting of its first text run kept, text set to $text). */
+    public function cloneLine(DOMElement $src, string $text): DOMElement
+    {
+        $c = $src->cloneNode(true);
+        $this->setParagraphText($c, $text);
+        return $c;
+    }
+
+    public function insertAfter(DOMElement $anchor, DOMElement $new): void
+    {
+        $anchor->parentNode->insertBefore($new, $anchor->nextSibling);
+    }
+
     /** Replace the visible text of a paragraph, keeping the formatting of its first text run. */
     public function setParagraphText(DOMElement $p, string $text): void
     {
